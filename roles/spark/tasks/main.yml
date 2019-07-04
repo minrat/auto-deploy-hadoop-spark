@@ -1,0 +1,62 @@
+---
+- name: Load Related Vars
+  include_vars: "{{ item }}"
+  with_items:
+    - nodes-spark.yml
+
+- name: Add Group 
+  group: name={{ hadoop_group}} state=present
+
+- name: Add User
+  user: name={{ hadoop_user }} comment="Hadoop" group={{ hadoop_group}} shell=/bin/bash
+
+- name: Update SELinux(1)
+  shell: "setenforce 0"
+
+- name: Update SELINUX(2)
+  selinux: state=disabled
+
+- name: Update firewalld
+  service: name=firewalld state=stopped enabled=false
+
+- name: Dispatch Spark Install Package
+  copy: src=spark-2.4.1-bin-without-hadoop.tgz dest=/home/{{ hadoop_user }}
+  #copy: src=spark-2.2.2-bin-hadoop2.7.tgz dest=/home/{{ hadoop_user }}
+
+- name: Extract Spark archive
+  unarchive: src=/home/{{ hadoop_user }}/spark-2.4.1-bin-without-hadoop.tgz dest=/usr/local owner={{ hadoop_user}} group={{ hadoop_group }} creates=/usr/local/spark copy=no
+  
+- command: mv /usr/local/spark-2.4.1-bin-without-hadoop /usr/local/spark creates=/usr/local/spark removes=/usr/local/spark-2.4.1-bin-without-hadoop
+
+- name: Update Spark Env Setting Action
+  lineinfile: dest=/home/{{ hadoop_user }}/.bashrc  line="{{ item }}"
+  with_items:
+    - 'export SPARK_HOME=/usr/local/spark'
+    - 'export PATH=$PATH:$SPARK_HOME/bin'
+
+- name: "Update The Local Hosts File(0/2)"
+  lineinfile: dest=/etc/hosts regexp='{{ item.ip }}' line="{{ item.ip }} {{ item.hostname }}" state=present
+  with_items: "{{ sparknodes }}"
+
+- name: "Update The Local Hosts File(1/2)"
+  lineinfile: dest=/etc/hosts regexp='127.0.0.1' state=absent
+
+- name: "Update The Local Hosts File(2/2)"
+  lineinfile: dest=/etc/hosts regexp='\:\:1' state=absent
+
+- name: Create Related Directory
+  file: path=/home/{{ hadoop_user }}/spark state=directory owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Update & Add The Spark Configuration File
+  template: src={{ item.src }} dest={{ item.dest }} owner={{ hadoop_user}} group={{ hadoop_group }}
+  with_items:
+    - {src: "spark-env.sh", dest: "/usr/local/spark/conf/spark-env.sh"}
+    - {src: "spark-defaults.conf", dest: "/usr/local/spark/conf/spark-defaults.conf"}
+    - {src: "slaves", dest: "/usr/local/spark/conf/slaves"}
+
+- name: Dispatch Related Jar Package File
+  copy: src={{ item }} dest=/usr/local/spark/jars/ mode=0644
+  with_items:
+    - commons-logging-1.1.3.jar
+    - slf4j-api-1.7.25.jar
+    - slf4j-log4j12-1.7.25.jar

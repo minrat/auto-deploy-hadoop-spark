@@ -1,0 +1,11 @@
+nodesslave:
+  - hostname: hadoop-data1
+    ip: 192.168.4.124
+  - hostname: hadoop-data2
+    ip: 192.168.4.125
+  - hostname: hadoop-data3
+    ip: 192.168.4.126
+  - hostname: hadoop-data4
+    ip: 192.168.4.127
+  - hostname: hadoop-data5
+    ip: 192.168.4.128

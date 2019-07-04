@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+  <property>
+    	<name>dfs.replication</name>
+    	<value>2</value>
+    	<description>Default block replication.The actual number of replications can be specified when the file is created.The default is used if replication is not specified in create time.
+    </description>
+  </property>
+  <property>
+   	<name>dfs.namenode.name.dir</name>
+   	<value>/home/{{ hadoop_user }}/hadoop-data/hdfs/namenode</value>
+   	<description>Determines where on the local filesystem the DFS name node should store the name table(fsimage). If this is a comma-delimited list of directories then the name table is replicated in all of the directories, for redundancy.</description>
+  </property>
+  <property>
+   	<name>dfs.datanode.data.dir</name>
+   	<value>/home/{{ hadoop_user }}/hadoop-data/hdfs/datanode</value>
+   	<description>Determines where on the local filesystem an DFS data node should store its blocks. If this is a comma-delimited list of directories, then data will be stored in all named directories, typically on different devices. Directories that do not exist are ignored.</description>
+  </property>
+
+  <property>
+        <name>dfs.secondary.http.address</name>
+        <value>{{ nodesmaster[1]['hostname'] }}:50090</value>
+  </property>
+   <property>
+        <name>dfs.nameservices</name>
+        <value>cluster</value>  
+    </property>
+    <property>
+      <name>dfs.ha.namenodes.cluster</name>
+        <value>nn1,nn2,nn3</value>  
+    </property>
+    <property>
+        <name>dfs.namenode.rpc-address.cluster.nn1</name>
+        <value>{{ nodesmaster[0]['hostname'] }}:8020</value>
+    </property>
+    <property>
+        <name>dfs.namenode.rpc-address.cluster.nn2</name>
+        <value>{{ nodesmaster[1]['hostname'] }}:8020</value>
+    </property>
+	<property>
+        <name>dfs.namenode.rpc-address.cluster.nn3</name>
+        <value>{{ nodesmaster[2]['hostname'] }}:8020</value>
+    </property>
+    <property>
+         <name>dfs.namenode.http-address.cluster.nn1</name>
+     	 <value>{{ nodesmaster[0]['hostname'] }}:9870</value>
+    </property>
+    <property>
+     	<name>dfs.namenode.http-address.cluster.nn2</name>
+     	<value>{{ nodesmaster[1]['hostname'] }}:9870</value>
+    </property>
+    <property>
+    	<name>dfs.namenode.http-address.cluster.nn3</name>
+    	<value>{{ nodesmaster[2]['hostname'] }}:9870</value>
+    </property>
+    <property>
+    	<name>dfs.namenode.shared.edits.dir</name>
+    	<value>qjournal://{{ nodesmaster[0]['hostname'] }}:8485;{{ nodesmaster[1]['hostname'] }}:8485;{{ nodesmaster[2]['hostname'] }}:8485/cluster</value>
+    </property>
+    <property>
+    	<name>dfs.client.failover.proxy.provider.mycluster</name>
+    	<value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+    </property>
+    <property>
+    	<name>dfs.ha.fencing.methods</name>
+    	<value>shell(/bin/true)</value>
+    </property>
+    <property>
+      <name>dfs.ha.fencing.ssh.private-key-files</name>
+      <value>/home/{{ hadoop_user }}/.ssh/id_rsa</value>
+    </property>
+    <property>
+    	<name>dfs.ha.automatic-failover.enabled</name>
+    	<value>true</value>
+    </property>
+</configuration>

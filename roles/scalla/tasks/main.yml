@@ -1,0 +1,18 @@
+---
+- name: Install Scalla
+  copy: src=scala-2.11.7.tgz dest=/tmp mode=0644
+
+- name: Create Directory
+  file: path=/opt/apps state=directory
+
+- name: un-package the Scalla
+  unarchive: src=/tmp/scala-2.11.7.tgz dest=/opt/apps/
+
+- name: Updata SCALLA_HOME
+  lineinfile: dest=/etc/profile  line={{ item }} state=present
+  with_items: 
+    - "export SCALLA_HOME=/opt/apps/scala-2.11.7"
+    - "export PATH=$SCALLA_HOME/bin:$PATH"
+
+- name: Enable SCALLA 
+  shell: "source /etc/profile"

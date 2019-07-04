@@ -1,0 +1,41 @@
+---
+#- name: Basic Prepare
+#  hosts: all
+#  remote_user: root
+#  
+#  roles:
+#    - jdk
+#    - scalla
+
+#- name: Install Zookeeper
+#  hosts: zk
+#  remote_user: root
+#
+#  roles:
+#    - zookeeper
+
+- name: Install hadoop master node
+  hosts: hadoop-master
+  remote_user: hadoop
+  sudo: yes
+
+  roles:
+    - common
+    - master
+
+- name: Install hadoop slave nodes
+  hosts: hadoop-data
+  remote_user: hadoop
+  sudo: yes
+
+  roles:
+    - common
+    - slave
+
+#- name: Install Spark
+#  hosts: spark
+#  remote_user: hadoop
+#  sudo: yes
+#
+#  roles:
+#    - spark

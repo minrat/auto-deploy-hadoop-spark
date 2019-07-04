@@ -1,0 +1,108 @@
+---
+- name: Load Related Vars
+  include_vars: "{{ item }}"
+  with_items:
+    #- "{{ masternodes }}"
+    - nodes-master.yml
+    - nodes-slave.yml
+
+- name: Add Group To Our TestBed
+  group: name={{ hadoop_group}} state=present
+
+- name: Add User To Our TestBed
+  user: name={{ hadoop_user }} password=$6$DIBjWFkL/2fhCO31$pUNwBQEiU0c7.hCRiX6KPQKPRxQ5KOuUlm4f/HLJQmR7XM0RZQvO3/mPMe7LP0OGbQOpXa0jagpFi.0Bk6VYf1  comment="Hadoop" group={{ hadoop_group}} shell=/bin/bash
+
+- name: Dispatch Keys To Our TestBed
+  authorized_key: user={{ hadoop_user }} key="{{ lookup('file', '../templates/id_rsa.pub') }}" state=present
+
+- name: Update(Close) SELinux(1)
+  shell: "setenforce 0"
+
+- name: Update(Disable) SELINUX(2)
+  selinux: state=disabled
+
+- name: Update(Close & Diasble) firewalld 
+  service: name=firewalld state=stopped enabled=false
+
+#- name: Download hadoop
+#  get_url: url={{ hadoop_download_url }} dest=/home/{{ hadoop_user }}/hadoop-3.2.0.tar.gz
+#  environment: proxy_env
+
+- name: Clean Pre Install Package
+  file: path=/usr/local/hadoop state=absent
+
+- name: Dispatch Hadoop Install Package
+  copy: src=hadoop-3.2.0.tar.gz dest=/home/{{ hadoop_user }}/hadoop-3.2.0.tar.gz force=yes
+
+- name: Extract hadoop Archive Package
+  unarchive: src=/home/{{ hadoop_user }}/hadoop-3.2.0.tar.gz dest=/usr/local owner={{ hadoop_user}} group={{ hadoop_group }} creates=/usr/local/hadoop copy=no
+  
+- name: Rename The Unarchive Directory Name
+  command: mv /usr/local/hadoop-3.2.0 /usr/local/hadoop creates=/usr/local/hadoop removes=/usr/local/hadoop-3.2.0
+
+- name: Update Local bashrc Profile(0)
+  lineinfile: dest=/home/{{ hadoop_user }}/.bashrc regexp="HADOOP_HOME=" line="export HADOOP_HOME=/usr/local/hadoop"
+
+- name: Update Local bashrc Profile(1)
+  lineinfile: dest=/home/{{ hadoop_user }}/.bashrc regexp="PATH=" line="export PATH=$PATH:$HADOOP_HOME/bin"
+
+- name: Update Local bashrc Profile(2)
+  lineinfile: dest=/home/{{ hadoop_user }}/.bashrc regexp="HADOOP_SSH_OPTS=" line="export HADOOP_SSH_OPTS=\"-i /home/{{ hadoop_user }}/.ssh/hadoop_rsa\""
+
+- name: "Update The Local Hosts File(0/3)"
+  lineinfile: dest=/etc/hosts regexp='{{ item.ip }}' line="{{ item.ip }} {{ item.hostname }}" state=present
+  with_items: "{{ nodesmaster }}"
+
+- name: "Update The Local Hosts File(1/3)"
+  lineinfile: dest=/etc/hosts regexp='{{ item.ip }}' line="{{ item.ip }} {{ item.hostname }}" state=present
+  with_items: "{{ nodesslave }}"
+
+- name: "Update The Local Hosts File(2/3)"
+  lineinfile: dest=/etc/hosts regexp='127.0.0.1' state=absent
+
+- name: "Update The Local Hosts File(3/3)"
+  lineinfile: dest=/etc/hosts regexp='\:\:1' state=absent
+
+- name: Create Default Wrokspace Directory(0/1)
+  file: path=/home/{{ hadoop_user }}/tmp state=absent owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create Default Wrokspace Directory(1/1)
+  file: path=/home/{{ hadoop_user }}/tmp state=directory owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create (Journalmode) Wrokspace Directory(0/1)
+  file: path=/home/{{ hadoop_user }}/tmp/journalmode state=absent owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create (Journalmode) Wrokspace Directory(1/1)
+  file: path=/home/{{ hadoop_user }}/tmp/journalmode state=directory owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create (Namenode) Wrokspace Directory(0/1)
+  file: path=/home/{{ hadoop_user }}/hadoop-data/hdfs/namenode state=absent owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create (Namenode) Wrokspace Directory(1/1)
+  file: path=/home/{{ hadoop_user }}/hadoop-data/hdfs/namenode state=directory owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create (Datanode) Wrokspace Directory(0/1)
+  file: path=/home/{{ hadoop_user }}/hadoop-data/hdfs/datanode state=absent owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Create (Datanode) Wrokspace Directory(1/1)
+  file: path=/home/{{ hadoop_user }}/hadoop-data/hdfs/datanode state=directory owner={{ hadoop_user}} group={{ hadoop_group }} mode=750
+
+- name: Update & Add The Hadoop Configuration File
+  template: src={{ item.src }} dest={{ item.dest }} owner={{ hadoop_user}} group={{ hadoop_group }}
+  with_items:
+    - {src: "core-site.xml", dest: "/usr/local/hadoop/etc/hadoop/core-site.xml"}
+    - {src: "hdfs-site.xml", dest: "/usr/local/hadoop/etc/hadoop/hdfs-site.xml"}
+    - {src: "yarn-site.xml", dest: "/usr/local/hadoop/etc/hadoop/yarn-site.xml"}
+    - {src: "mapred-site.xml", dest: "/usr/local/hadoop/etc/hadoop/mapred-site.xml"}
+
+- name: Update The Hadoop Env File
+  lineinfile: dest=/usr/local/hadoop/etc/hadoop/hadoop-env.sh regexp="^export JAVA_HOME" line="export JAVA_HOME=/opt/apps/jdk1.8.0_11"
+
+- name: Update The Hadoop Env File
+  lineinfile: dest=/usr/local/hadoop/etc/hadoop/hadoop-env.sh line="{{ item }}"
+  with_items:
+    - "export HDFS_NAMENODE_USER={{ hadoop_user }}"
+    - "export HDFS_DATANODE_USER={{ hadoop_user }}"
+#    #- "export HDFS_SECONDARYNAMENODE_USER={{ hadoop_user }}"
+    - "export HDFS_ZKFC_USER={{ hadoop_user }}"
+    - "export HDFS_JOURNALNODE_USER={{ hadoop_user }}"

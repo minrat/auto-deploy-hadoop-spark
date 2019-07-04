@@ -1,0 +1,18 @@
+---
+- name: Install Java 
+  copy: src=jdk-8u11-linux-x64.tar.gz dest=/tmp mode=0644
+
+- name: Create Directory
+  file: path=/opt/apps state=directory
+
+- name: un-package the Java
+  unarchive: src=/tmp/jdk-8u11-linux-x64.tar.gz dest=/opt/apps/
+
+- name: Updata JAVA_HOME
+  lineinfile: dest=/etc/profile  line={{ item }} state=present
+  with_items: 
+    - "export JAVA_HOME=/opt/apps/jdk1.8.0_11"
+    - "export PATH=$JAVA_HOME/bin:$PATH"
+
+- name: Enable JAVA_HOME
+  shell: "source /etc/profile"

@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+  <property>
+    	<name>dfs.replication</name>
+    	<value>2</value>
+  </property>
+
+  <property>  
+        <name>dfs.permissions.enabled</name>  
+        <value>false</value>  
+  </property>
+
+  <property>
+   	<name>dfs.namenode.name.dir</name>
+   	<value>file:///home/{{ hadoop_user }}/hadoop-data/hdfs/namenode</value>
+  </property>
+
+  <property>
+   	<name>dfs.datanode.data.dir</name>
+   	<value>file:///home/{{ hadoop_user }}/hadoop-data/hdfs/datanode</value>
+  </property>
+
+  <property>
+        <name>dfs.nameservices</name>
+        <value>cluster</value>  
+  </property>
+
+  <property>
+       <name>dfs.ha.namenodes.cluster</name>
+       <value>nn1,nn2,nn3</value>  
+  </property>
+
+  <property>
+        <name>dfs.namenode.rpc-address.cluster.nn1</name>
+        <value>{{ nodesmaster[0]['hostname'] }}:8020</value>
+  </property>
+
+  <property>
+        <name>dfs.namenode.rpc-address.cluster.nn2</name>
+        <value>{{ nodesmaster[1]['hostname'] }}:8020</value>
+  </property>
+
+  <property>
+        <name>dfs.namenode.rpc-address.cluster.nn3</name>
+        <value>{{ nodesmaster[2]['hostname'] }}:8020</value>
+  </property>
+
+  <property>
+         <name>dfs.namenode.http-address.cluster.nn1</name>
+     	 <value>{{ nodesmaster[0]['hostname'] }}:50070</value>
+  </property>
+
+  <property>
+     	<name>dfs.namenode.http-address.cluster.nn2</name>
+     	<value>{{ nodesmaster[1]['hostname'] }}:50070</value>
+  </property>
+
+  <property>
+    	<name>dfs.namenode.http-address.cluster.nn3</name>
+    	<value>{{ nodesmaster[2]['hostname'] }}:50070</value>
+  </property>
+
+  <property>
+    	<name>dfs.namenode.shared.edits.dir</name>
+    	<value>qjournal://{{ nodesmaster[0]['hostname'] }}:8485;{{ nodesmaster[1]['hostname'] }}:8485;{{ nodesmaster[2]['hostname'] }}:8485/cluster</value>
+  </property>
+
+  <property>
+    	<name>dfs.client.failover.proxy.provider.cluster</name>
+    	<value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+  </property>
+
+  <property>
+   	<name>dfs.ha.automatic-failover.enabled</name>
+   	<value>true</value>
+  </property>
+
+  <property>
+      <name>dfs.ha.fencing.methods</name>
+      <value>
+          sshfence 
+          shell(/bin/true)
+      </value>
+  </property>
+
+  <property>
+      <name>dfs.ha.fencing.ssh.private-key-files</name>
+      <value>/home/{{ hadoop_user }}/.ssh/id_rsa</value>
+  </property>
+
+  <property>
+	<name>dfs.journalnode.edits.dir</name>
+    	<value>/home/{{ hadoop_user }}/tmp/journalmode</value>
+  </property>
+
+  <property>      
+       <name>dfs.webhdfs.enabled</name>      
+       <value>true</value>      
+  </property>      
+
+</configuration>

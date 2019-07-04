@@ -1,0 +1,10 @@
+---
+- name: Load Related Vars
+  include_vars: "{{ item }}"
+  with_items:
+    - nodes-master.yml
+    - nodes-slave.yml
+    
+- name: Copy private key into place
+  template: src=hadoop_rsa dest=/home/{{ hadoop_user }}/.ssh/hadoop_rsa owner={{ hadoop_user }} group={{ hadoop_group}} mode=0600
+

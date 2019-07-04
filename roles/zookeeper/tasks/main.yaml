@@ -1,0 +1,48 @@
+- name: Dispacth the ssh key
+  authorized_key: user=root key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Stop firewalld
+  service: name=firewalld state=stopped enabled=no
+
+- name: Disabled selinux (00-Stop)
+  selinux: state=disabled
+
+- name: Disabled selinux (01-Diabled)
+  lineinfile:  dest=/etc/selinux/config  regexp='^SELINUX=' line='SELINUX=disabled' state=present
+
+- name: Create Related Directory
+  file: path=/opt/apps  state=directory
+
+- name: Unpackage Zookeeper
+  unarchive: src=zookeeper-3.4.13.tar.gz dest=/opt/apps
+
+- name: Copy Configuration File For Zookeeper
+  template: src=zoo.cfg dest=/opt/apps/zookeeper-3.4.13/conf/zoo.cfg mode=0644
+
+- name: Create Related Directory
+  file: path=/opt/apps/zookeeper-3.4.13/data/ state=directory
+
+- name: Create Related File
+  file: path=/opt/apps/zookeeper-3.4.13/data/myid state=touch
+
+- name: Copy Related Scripts
+  template: src=setID.sh dest=/opt/apps/zookeeper-3.4.13/data/ mode=0644
+
+- name: Add myid File
+  shell: source /opt/apps/zookeeper-3.4.13/data/setID.sh mode=755
+
+- name: Start Zookeeper Service
+  command: sh /opt/apps/zookeeper-3.4.13/bin/zkServer.sh restart
+
+- name: Enable Boot At Power On 
+  file: path=/etc/rc.d/rc.local mode=0755
+
+- name: Enable Boot At Power On 
+  lineinfile:
+      path: /etc/rc.d/rc.local
+      line: source /etc/profile
+
+- name: Enable Boot At Power On 
+  lineinfile:
+      path: /etc/rc.d/rc.local
+      line: bash /opt/apps/zookeeper-3.4.13/bin/zkServer.sh restart

@@ -1,0 +1,8 @@
+---
+- name: Install Spark
+  hosts: spark
+  remote_user: hadoop
+  sudo: yes
+
+  roles:
+    - spark

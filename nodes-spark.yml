@@ -1,0 +1,25 @@
+sparknodes:
+  - hostname: hadoop-master-1
+    ip: 192.168.4.121
+  - hostname: hadoop-master-2
+    ip: 192.168.4.122
+  - hostname: hadoop-master-3
+    ip: 192.168.4.123
+  - hostname: hadoop-data1
+    ip: 192.168.4.124
+  - hostname: hadoop-data2
+    ip: 192.168.4.125
+  - hostname: hadoop-data3
+    ip: 192.168.4.126
+  - hostname: hadoop-data4
+    ip: 192.168.4.127
+  - hostname: hadoop-data5
+    ip: 192.168.4.128
+
+zookeepernodes:
+  - hostname: hadoop-data3
+    ip: 192.168.4.126
+  - hostname: hadoop-data4
+    ip: 192.168.4.127
+  - hostname: hadoop-data5
+    ip: 192.168.4.128
